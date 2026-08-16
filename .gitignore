@@ -8,8 +8,9 @@ frontend/dist/
 web/dist/
 *.tsbuildinfo
 
-# ===== 数据库与缓存（本地数据不入库）=====
-data/*.db
+# ===== 数据库与缓存 =====
+# desk.db 为个人使用数据，随仓库同步（灰测阶段）
+# 仅排除 WAL 临时文件与缓存（这些是运行时产生的辅助文件，不完整、不宜同步）
 data/*.db-shm
 data/*.db-wal
 data/*.db-journal

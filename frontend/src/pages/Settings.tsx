@@ -66,6 +66,9 @@ export default function Settings() {
           <span>当前行情源：<b className="text-foreground">{market.data?.source === 'tdx' ? 'TDX' : 'Tushare'}</b></span>
           <span>活跃市值：<b className="text-foreground">{amv.data?.source === 'local' ? `${amv.data.series.length} 条本地数据` : '未同步'}</b></span>
         </div>
+        <div className="mt-3 rounded-lg border border-dashed border-border bg-elevated/40 px-3 py-2 text-[11px] leading-relaxed text-muted">
+          <b className="text-foreground">数据刷新说明</b>：行情/情绪/板块等缓存数据统一为<b className="text-foreground">每小时整点</b>刷新（盘中 9:15-11:35 / 12:55-15:05 生效），手动打开页面时若缓存已过期会即时补拉一次；外盘每日 8:00 / 9:10 更新；收盘数据 15:10 自动归档。如需实时行情请以交易软件为准。
+        </div>
       </Card>
 
       <Card title="关于">

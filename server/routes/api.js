@@ -31,7 +31,7 @@ router.get('/market/moneyflow', async (req, res) => {
     if (!codes.length) return res.status(400).json({ error: '需要 codes' });
     const date = String(req.query.date || '').replace(/-/g, '') || '';
     const key = `moneyflow:${date || 'latest'}:${codes.join(',')}`;
-    const r = await withCache(key, 30 * 60 * 1000, async () => {
+    const r = await withCache(key, 60 * 60 * 1000, async () => {
       const out = {};
       for (const code of codes) {
         const tsCode = code.startsWith('6') ? `${code}.SH` : code.startsWith('4') || code.startsWith('8') ? `${code}.BJ` : `${code}.SZ`;
@@ -148,10 +148,10 @@ router.delete('/premarket/:id', (req, res) => {
   res.json({ ok: true, date });
 });
 
-// ── 外盘指数（缓存30分钟）──
+// ── 外盘指数（缓存1小时）──
 router.get('/global/indices', async (req, res) => {
   try {
-    const r = await withCache('global:indices', 30 * 60 * 1000, async () => ({ data: await globalIndices(), source: 'eastmoney' }));
+    const r = await withCache('global:indices', 60 * 60 * 1000, async () => ({ data: await globalIndices(), source: 'eastmoney' }));
     res.json({ data: r.data, ts: Date.now(), cached: r.cached });
   } catch (e) { res.status(502).json({ error: e.message }); }
 });
@@ -159,7 +159,7 @@ router.get('/global/indices', async (req, res) => {
 // ── 年度走势数据（今年 1/1 起，指数/量能/活跃市值/涨跌家数/涨跌停）──
 router.get('/market/year', async (req, res) => {
   try {
-    const maxAge = Number(req.query.maxAge || 1800);
+    const maxAge = Number(req.query.maxAge || 3600);
     const cached = cacheGet('market:year');
     if (cached && Date.now() - new Date(cached.updatedAt).getTime() < maxAge * 1000) {
       return res.json({ ...cached.payload, cached: true });
@@ -175,7 +175,7 @@ router.get('/sector/kg', async (req, res) => {
   try {
     const { type = 'concept', sort = 'score', limit = 40, date } = req.query;
     const key = `kg:${type}:${sort}:${limit}:${date || 'latest'}`;
-    const r = await withCache(key, 10 * 60 * 1000, async () => ({ data: kgSectors({ type, sort, limit: Number(limit), date }), source: 'kg' }));
+    const r = await withCache(key, 60 * 60 * 1000, async () => ({ data: kgSectors({ type, sort, limit: Number(limit), date }), source: 'kg' }));
     res.json(r.data);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -199,7 +199,7 @@ router.get('/global/all', async (req, res) => {
 // ── 涨跌家数（市场宽度）──
 router.get('/market/breadth', async (req, res) => {
   try {
-    const maxAge = Number(req.query.maxAge || 300);
+    const maxAge = Number(req.query.maxAge || 3600);
     const cached = cacheGet('breadth:now');
     if (cached && Date.now() - new Date(cached.updatedAt).getTime() < maxAge * 1000) {
       return res.json({ ...cached.payload, cached: true });
@@ -221,7 +221,7 @@ router.get('/sector/flow', async (req, res) => {
   try {
     const { type = 'industry', pz = 30, sortBy = 'f62' } = req.query;
     const key = `sector:flow:${type}:${pz}:${sortBy}`;
-    const r = await withCache(key, 60 * 1000, async () => ({ data: await sectorFlow({ type, pz: Number(pz), sortBy }), source: 'eastmoney' }));
+    const r = await withCache(key, 60 * 60 * 1000, async () => ({ data: await sectorFlow({ type, pz: Number(pz), sortBy }), source: 'eastmoney' }));
     res.json(r.data);
   } catch (e) { res.status(502).json({ error: e.message }); }
 });
@@ -253,7 +253,7 @@ router.get('/market/amv', async (req, res) => {
   try {
     const days = Number(req.query.days || 10);
     const key = `amv:${days}`;
-    const r = await withCache(key, 10 * 60 * 1000, async () => {
+    const r = await withCache(key, 60 * 60 * 1000, async () => {
       const amvPath = process.env.AMV_CSV || 'F:\\Compass\\WavMain\\ANALYSE\\Data\\ChinaStk\\Z_SK\\0AMV_base.csv';
       if (!fs.existsSync(amvPath)) return { data: { series: [], source: 'none', note: '本地0AMV文件不存在' }, source: 'none' };
       const lines = fs.readFileSync(amvPath, 'utf-8').split(/\r?\n/).filter(Boolean);
@@ -280,7 +280,7 @@ router.get('/market/amv', async (req, res) => {
 // ── 情绪面板 ──
 router.get('/emotion', async (req, res) => {
   try {
-    const maxAge = Number(req.query.maxAge || 120);
+    const maxAge = Number(req.query.maxAge || 3600);
     const cached = cacheGet('emotion:panel');
     if (cached && Date.now() - new Date(cached.updatedAt).getTime() < maxAge * 1000) {
       return res.json({ ...cached.payload, cached: true });
@@ -299,7 +299,7 @@ router.get('/emotion/history', async (req, res) => {
     const days = Math.min(Number(req.query.days || 14), 30);
     const from = String(req.query.from || '').replace(/-/g, '') || null;
     const key = `emotion:history:${from || days}`;
-    const maxAge = Number(req.query.maxAge || 1800);
+    const maxAge = Number(req.query.maxAge || 3600);
     const cached = cacheGet(key);
     if (cached && Date.now() - new Date(cached.updatedAt).getTime() < maxAge * 1000) {
       return res.json({ ...cached.payload, cached: true });
@@ -316,7 +316,7 @@ router.get('/emotion/history', async (req, res) => {
 router.get('/market/summary', async (req, res) => {
   try {
     const cached = cacheGet('market:summary');
-    const maxAge = Number(req.query.maxAge || 60); // 秒
+    const maxAge = Number(req.query.maxAge || 3600); // 秒
     if (cached && Date.now() - new Date(cached.updatedAt).getTime() < maxAge * 1000) {
       return res.json({ ...cached.payload, cached: true });
     }
@@ -334,7 +334,7 @@ router.get('/market/quotes', async (req, res) => {
     const codes = String(req.query.codes || '').split(',').filter(Boolean);
     if (!codes.length) return res.status(400).json({ error: '需要 codes 参数' });
     const key = `quotes:${codes.sort().join(',')}`;
-    const r = await withCache(key, 20 * 1000, async () => ({ data: await tdx.quotes(codes), source: 'tdx' }));
+    const r = await withCache(key, 60 * 60 * 1000, async () => ({ data: await tdx.quotes(codes), source: 'tdx' }));
     res.json({ data: r.data, cached: r.cached });
   } catch (e) {
     res.status(502).json({ error: e.message });
@@ -347,7 +347,7 @@ router.get('/market/kline', async (req, res) => {
     const { code, setcode, period = '4', count = '120' } = req.query;
     if (!code) return res.status(400).json({ error: '需要 code 参数' });
     const key = `kline:${code}:${setcode || ''}:${period}:${count}`;
-    const r = await withCache(key, 5 * 60 * 1000, async () => ({ data: await tdx.kline(code, { setcode, period, wantNum: count }), source: 'tdx' }));
+    const r = await withCache(key, 60 * 60 * 1000, async () => ({ data: await tdx.kline(code, { setcode, period, wantNum: count }), source: 'tdx' }));
     res.json({ data: r.data, cached: r.cached });
   } catch (e) {
     res.status(502).json({ error: e.message });
@@ -544,7 +544,7 @@ router.get('/compare', async (req, res) => {
     if (codes.length < 2) return res.status(400).json({ error: '至少需要2只股票对比' });
     const days = Math.min(Number(req.query.days || 30), 120);
     const key = `compare:${codes.join(',')}:${days}`;
-    const r = await withCache(key, 5 * 60 * 1000, async () => {
+    const r = await withCache(key, 60 * 60 * 1000, async () => {
       const out = [];
       for (const code of codes) {
         try {
@@ -569,7 +569,7 @@ router.get('/compare', async (req, res) => {
 // ═ 信息巡检：当日要闻（新浪财经 7x24，东财降级）═
 router.get('/patrol', async (req, res) => {
   try {
-    const r = await withCache('patrol:news', 10 * 60 * 1000, async () => {
+    const r = await withCache('patrol:news', 60 * 60 * 1000, async () => {
       // 主源：新浪 7x24 直播
       let items = [];
       try {

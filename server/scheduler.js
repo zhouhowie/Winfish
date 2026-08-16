@@ -1,7 +1,7 @@
 /**
  * 定时任务：盘中自动刷新核心数据 → 快照缓存
  * 交易时段: 9:15-11:35 / 12:55-15:05（含竞价与尾盘）
- * 刷新节奏：核心面板 60s；盘后收盘自动拉复盘数据包。
+ * 刷新节奏：核心面板每小时（整点）；盘后收盘自动拉复盘数据包。
  */
 import cron from 'node-cron';
 import { marketSummary } from './datasources/index.js';
@@ -111,14 +111,14 @@ async function saveDailyStats() {
 }
 
 export function startScheduler() {
-  // 盘中每分钟刷一次核心面板
-  cron.schedule('* * * * *', async () => {
+  // 盘中每小时整点刷一次核心面板（低频模式：行情最多滞后1小时）
+  cron.schedule('0 * * * *', async () => {
     if (!inTradingSession()) return;
     await refreshCore();
   });
 
-  // 盘中每 5 分钟刷涨跌家数 + 成交额时间线
-  cron.schedule('*/5 * * * *', async () => {
+  // 盘中每小时整点刷涨跌家数 + 成交额时间线
+  cron.schedule('0 * * * *', async () => {
     if (!inTradingSession()) return;
     await refreshBreadth();
     await refreshTurnoverTimeline();
@@ -148,7 +148,7 @@ export function startScheduler() {
   refreshBreadth();
   refreshTurnoverTimeline();
   refreshGlobal();
-  console.log('[scheduler] 定时任务已启动（盘中60s/宽度5m/外盘每日/盘后快照）');
+  console.log('[scheduler] 定时任务已启动（盘中每小时整点 / 外盘每日 / 盘后快照）');
 }
 
 export function schedulerStatus() {

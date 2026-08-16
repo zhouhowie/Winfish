@@ -38,7 +38,7 @@ onUnmounted(() => clearInterval(timer));
     <div class="idx card turnover">
       <div class="idx-name">两市成交额</div>
       <div class="idx-now mono">{{ fmtAmount(summary?.turnover) }}</div>
-      <div class="idx-sub muted">数据源 {{ summary?.source === 'tdx' ? 'TDX' : 'Tushare' }}</div>
+      <div class="idx-sub muted">自动刷新</div>
     </div>
 
     <!-- 刷新状态 -->

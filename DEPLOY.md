@@ -1,4 +1,4 @@
-# Fishwin Trading Desk · 腾讯云部署指南
+# 知行 Winfish · 腾讯云部署指南
 
 盘中操作 + 盘后复盘交互看板。前后端一体：Node.js (Express) + React + SQLite 持久化。
 
@@ -69,7 +69,7 @@ PORT=7788
 ```bash
 sudo npm install -g pm2
 cd /opt/trading-desk
-pm2 start server/index.js --name fishwin-desk
+pm2 start server/index.js --name winfish
 pm2 save
 pm2 startup            # 按输出提示执行那行 sudo 命令（开机自启）
 ```
@@ -77,7 +77,7 @@ pm2 startup            # 按输出提示执行那行 sudo 命令（开机自启�
 ### 7. Nginx 反代（域名访问）
 把 `server_name` 换成你的域名：
 ```bash
-sudo tee /etc/nginx/sites-available/fishwin > /dev/null <<'EOF'
+sudo tee /etc/nginx/sites-available/winfish > /dev/null <<'EOF'
 server {
     listen 80;
     server_name 你的域名.com;
@@ -92,7 +92,7 @@ server {
     }
 }
 EOF
-sudo ln -s /etc/nginx/sites-available/fishwin /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/winfish /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
@@ -167,28 +167,19 @@ npm run deploy:cloud -- --skip-install  # 依赖没变时跳过远程 npm instal
 
 之后在 Hanako 对话里说「同步到云端」，公明也会直接执行这条同步。
 
-## 四、数据源在云端的情况
+## 四、云端运行说明
 
-| 数据 | 云端获取方式 |
-|---|---|
-| 指数/个股行情/K线 | tdxhub（云端直连，无需配置） |
-| 涨停/跌停/炸板/梯队/龙头轨迹 | tdxhub 选股接口（云端直连） |
-| 日线/指标/宏观 | Tushare API（需 .env token） |
-| 东财外盘/美股/板块资金 | 云端直连 |
-| KG 板块资金雷达 | 云端用 GitHub 备援：`python fetch_kg_radar.py --date 日期`（skill 已固化，GitHub 仓库 ZXcharT/radar） |
-| 0AMV 活跃市值 | 本地文件，云端无此数据 → 看板总览该图降级显示（不影响其他模块） |
-
-注意：本地 SQLite（data/desk.db）中的盘前预案/持仓/复盘归档等自定义数据，打包时会随 zip 一起带上；之后云端与本地各自维护，如需同步可再做一个推送脚本。
+云端与本地共用同一套代码与数据库结构。本地 SQLite（data/desk.db）中的盘前预案/持仓/复盘归档等自定义数据，部署时会随包一起带上；之后云端与本地各自维护，如需同步可再做一个推送脚本。
 
 ## 五、定时任务（后端内置）
-- 盘中 9:15-11:35 / 12:55-15:05：每分钟自动刷新核心数据到缓存
+- 盘中 9:15-11:35 / 12:55-15:05：核心数据每小时整点刷新到缓存
 - 9:10 盘前预热、15:10 盘后自动拉收盘数据 + 历史连板缓存预热
 - 前端自动轮询更新，无需手动刷新
 
 ## 六、常用运维命令
 ```bash
-pm2 logs fishwin-desk     # 看日志
-pm2 restart fishwin-desk  # 重启
-pm2 status                # 状态
-pm2 monit                 # 资源监控
+pm2 logs winfish     # 看日志
+pm2 restart winfish  # 重启
+pm2 status           # 状态
+pm2 monit            # 资源监控
 ```

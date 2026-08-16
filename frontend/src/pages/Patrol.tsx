@@ -51,7 +51,7 @@ export default function Patrol() {
         <Card title="巡检项 · 政策与资金">
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between"><span className="text-muted">板块资金流向</span><Badge tone="accent">板块跟踪</Badge></div>
-            <div className="flex justify-between"><span className="text-muted">KG 加权评分雷达</span><Badge tone="accent">板块资金</Badge></div>
+            <div className="flex justify-between"><span className="text-muted">加权评分雷达</span><Badge tone="accent">板块资金</Badge></div>
             <div className="flex justify-between"><span className="text-muted">两融/融券</span><Badge tone="default">盘后复盘</Badge></div>
           </div>
         </Card>

@@ -40,7 +40,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-base font-semibold">看板总览</h1>
         <span className="num text-[11px] text-muted">
-          {market.data?.source === 'tdx' ? 'TDX' : 'Tushare'} · {new Date(market.data?.ts || Date.now()).toLocaleTimeString('zh-CN', { hour12: false })}
+          {new Date(market.data?.ts || Date.now()).toLocaleTimeString('zh-CN', { hour12: false })}
         </span>
       </div>
 
@@ -102,7 +102,7 @@ export default function Dashboard() {
       {/* 板块资金已独立为导航页 → 见 /sector */}
 
       <div className="flex items-center gap-1.5 text-[10px] text-muted">
-        数据源：TDX（行情/情绪）· 东财（外盘/美股/板块资金）· Tushare（资金流）· 自动刷新 · 历史数据已入库缓存
+        自动刷新 · 历史数据已入库缓存
       </div>
     </div>
   );

@@ -61,7 +61,7 @@ export default function SectorPage() {
       </Card>
 
       <div className="text-[10px] text-muted">
-        数据源：KG 资金流（OneChart 同源，波段流入率/加权评分/净额）· 本地文件读取 · 不重复请求
+        波段流入率 / 加权评分 / 净额 · 本地缓存 · 不重复请求
       </div>
     </div>
   );

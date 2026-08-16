@@ -17,7 +17,7 @@ export default function ExportPage() {
 
   const exportHtml = () => {
     const d = reviewQ.data?.data;
-    const title = `Fishwin 交易日报 · ${sel}`;
+    const title = `知行 Winfish 交易日报 · ${sel}`;
     const rows = [
       ['盘后复盘', d?.summary || '（无归档）', d?.plan ? `次日预案：${d.plan}` : ''],
       ['盘前预期·买入计划', planByDate.filter(p => p.side === 'buy').map(p => `${p.name}(${p.code}) ${p.mode} ${p.logic} 止盈${p.tp} 止损${p.sl}`).join('<br/>') || '（无）', ''],
@@ -29,13 +29,13 @@ h1{font-size:22px;border-bottom:3px double #1d4ed8;padding-bottom:10px}h2{font-s
 table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border:1px solid #e8eaed;padding:8px 12px;font-size:13px;text-align:left;vertical-align:top}
 th{background:#f3f3ee;letter-spacing:2px}blockquote{border-left:3px solid #c8341f;margin:12px 0;padding:8px 16px;background:#fff;color:#5a5a66}
 .muted{color:#8e8e96;font-size:12px}.red{color:#DC143C}.green{color:#228B22}</style></head><body>
-<h1>${title}</h1><div class="muted">生成时间：${new Date().toLocaleString('zh-CN')} · Fishwin Trading Desk</div>
+<h1>${title}</h1><div class="muted">生成时间：${new Date().toLocaleString('zh-CN')} · 知行 Winfish</div>
 ${rows.filter(r => r[1] && r[1] !== '（无）').map(r => `<h2>${r[0]}</h2><p>${r[1]}</p>${r[2] ? `<blockquote>${r[2]}</blockquote>` : ''}`).join('')}
 </body></html>`;
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `Fishwin日报_${sel}.html`;
+    a.download = `Winfish日报_${sel}.html`;
     a.click();
     URL.revokeObjectURL(a.href);
   };

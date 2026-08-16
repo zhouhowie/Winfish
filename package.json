@@ -1,8 +1,8 @@
 {
-  "name": "trading-desk",
+  "name": "winfish",
   "version": "0.1.0",
   "private": true,
-  "description": "鱼的中盘操作 + 盘后复盘交互看板（TDX + Tushare 主数据源）",
+  "description": "知行 Winfish - A股盘中/盘前/盘后一体化工作台",
   "type": "module",
   "scripts": {
     "start": "node server/index.js",

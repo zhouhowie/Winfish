@@ -71,8 +71,8 @@ export function Layout() {
               F
             </div>
             <div className="font-mono text-[13px] font-bold leading-tight tracking-[0.06em]">
-              <div>Fishwin</div>
-              <div>Trading Desk</div>
+              <div>Winfish</div>
+              <div>知行</div>
             </div>
           </div>
           <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-secondary">
@@ -105,19 +105,12 @@ export function Layout() {
           ))}
         </nav>
 
-        {/* 底部数据源状态 + 设置入口 */}
+        {/* 底部状态 + 设置入口 */}
         <div className="shrink-0 border-t border-border px-3 py-2.5 space-y-2">
           <NavLink to="/settings" className="flex items-center gap-2 rounded-btn px-2 py-1.5 text-xs text-secondary transition-colors hover:bg-elevated hover:text-foreground">
             <Settings className="h-3.5 w-3.5" />
             <span>设置</span>
           </NavLink>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Database className="h-3.5 w-3.5 text-muted" />
-              <span className="text-xs text-secondary">数据源</span>
-            </div>
-            <span className="badge bg-accent/10 text-accent">TDX · Tushare</span>
-          </div>
           <div className="mt-2 flex items-center justify-between">
             <span className="text-xs text-secondary">两市成交</span>
             <span className="num text-xs font-semibold text-foreground">

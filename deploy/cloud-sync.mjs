@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const configPath = path.join(root, 'deploy', 'cloud-config.json');
-const zipPath = path.join(root, 'deploy', 'fishwin-desk.zip');
+const zipPath = path.join(root, 'deploy', 'winfish.zip');
 
 const args = process.argv.slice(2);
 const opt = (flag) => args.includes(flag);
@@ -61,7 +61,7 @@ if (!noBuild) {
 
 // ── 2. 打包（含本地数据库；停服务避免 SQLite 锁） ──
 console.log('\n📦 [2/5] 打包部署包…');
-try { shq('pm2 stop fishwin-desk'); console.log('  本地服务已暂停（打包数据库）'); } catch { /* 本地未跑 pm2 也继续 */ }
+try { shq('pm2 stop winfish'); console.log('  本地服务已暂停（打包数据库）'); } catch { /* 本地未跑 pm2 也继续 */ }
 try {
   const excludes = [
     '--exclude=node_modules', '--exclude=frontend/node_modules', '--exclude=frontend/dist',
@@ -73,9 +73,9 @@ try {
   if (fs.existsSync(zipPath)) fs.rmSync(zipPath);
   shq(`tar -a -cf "${zipPath}" ${excludes.join(' ')} .`);
   const size = (fs.statSync(zipPath).size / 1024 / 1024).toFixed(2);
-  console.log(`  打包完成: fishwin-desk.zip ${size} MB`);
+  console.log(`  打包完成: winfish.zip ${size} MB`);
 } finally {
-  try { shq('pm2 restart fishwin-desk --update-env'); console.log('  本地服务已恢复'); } catch { /* ignore */ }
+  try { shq('pm2 restart winfish --update-env'); console.log('  本地服务已恢复'); } catch { /* ignore */ }
 }
 
 // ── 3. 上传到服务器 ──
@@ -84,12 +84,12 @@ shq(`scp ${sshOpt} "${zipPath}" ${ssh}:`); // 默认传到家目录
 
 // ── 4. 远程解压 + 装依赖 + 重启 ──
 console.log('\n🚀 [4/5] 远程部署中…');
-let remoteCmd = `rm -rf ${cfg.remoteDir}/frontend/dist && unzip -o ~/fishwin-desk.zip -d ${cfg.remoteDir}`;
+let remoteCmd = `rm -rf ${cfg.remoteDir}/frontend/dist && unzip -o ~/winfish.zip -d ${cfg.remoteDir}`;
 if (!skipInstall) {
   remoteCmd += ` && cd ${cfg.remoteDir} && npm install --omit=dev --silent`;
 }
 remoteCmd += ` && cd ${cfg.remoteDir}/frontend && npm install --silent`;
-remoteCmd += ` && cd ${cfg.remoteDir} && (pm2 restart fishwin-desk --update-env || pm2 start server/index.js --name fishwin-desk)`;
+remoteCmd += ` && cd ${cfg.remoteDir} && (pm2 restart winfish --update-env || pm2 start server/index.js --name winfish)`;
 console.log(`  远程: ${remoteCmd.slice(0, 120)}…`);
 const out = shq(`ssh ${sshOpt} ${ssh} "${remoteCmd.replace(/"/g, '\\"')}"`, { timeout: 600000 });
 console.log(out);
@@ -101,6 +101,6 @@ if (hc.includes('200')) {
   console.log(`✅ 同步成功！云端已更新并运行`);
   console.log(`  访问: http://${cfg.host}（或你的域名）`);
 } else {
-  console.error(`⚠️  健康检查未通过（HTTP ${hc}），请 SSH 查看: pm2 logs fishwin-desk`);
+  console.error(`⚠️  健康检查未通过（HTTP ${hc}），请 SSH 查看: pm2 logs winfish`);
   process.exitCode = 1;
 }

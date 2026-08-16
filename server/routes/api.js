@@ -21,8 +21,10 @@ import { yearData } from '../services/year.js';
 import { withCache } from '../cache.js';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = Router();
+const apiDir = path.dirname(fileURLToPath(import.meta.url));
 
 // ── 个股资金流（Tushare moneyflow，2000积分，缓存30分钟）──
 router.get('/market/moneyflow', async (req, res) => {
@@ -248,30 +250,20 @@ router.post('/import/trades', (req, res) => {
   res.json({ ok, skip });
 });
 
-// ── 活跃市值（本地 0AMV 文件，缓存10分钟）──
+// ── 活跃市值（仓库内 data/amv_series.js，随仓库同步）──
 router.get('/market/amv', async (req, res) => {
   try {
     const days = Number(req.query.days || 10);
     const key = `amv:${days}`;
     const r = await withCache(key, 60 * 60 * 1000, async () => {
-      const amvPath = process.env.AMV_CSV || 'F:\\Compass\\WavMain\\ANALYSE\\Data\\ChinaStk\\Z_SK\\0AMV_base.csv';
-      if (!fs.existsSync(amvPath)) return { data: { series: [], source: 'none', note: '本地0AMV文件不存在' }, source: 'none' };
-      const lines = fs.readFileSync(amvPath, 'utf-8').split(/\r?\n/).filter(Boolean);
-      const header = lines[0].split(',');
-      const idx = {};
-      header.forEach((h, i) => idx[h.trim()] = i);
-      const dateCol = idx.date ?? idx.Date ?? 0;
-      const closeCol = idx.close ?? idx.Close ?? 1;
-      const chgCol = idx.change ?? idx.Change;
-      const series = lines.slice(1).slice(-days).map(l => {
-        const p = l.split(',');
-        return {
-          date: p[dateCol]?.trim(),
-          close: Number(p[closeCol]) || 0,
-          change: chgCol != null ? (Number(p[chgCol]) || 0) : null,
-        };
-      }).filter(s => s.date);
-      return { data: { series, source: 'local', path: amvPath }, source: 'local' };
+      const amvFile = path.join(apiDir, '../../data/amv_series.js');
+      if (!fs.existsSync(amvFile)) return { data: { series: [], source: 'none', note: 'amv_series.js 不存在' }, source: 'none' };
+      const text = fs.readFileSync(amvFile, 'utf-8');
+      const m = text.match(/const AMV_SERIES\s*=\s*(\[[\s\S]*\]);?\s*$/);
+      if (!m) return { data: { series: [], source: 'none', note: 'AMV_SERIES 解析失败' }, source: 'none' };
+      const all = JSON.parse(m[1]);
+      const series = all.slice(-days).map(x => ({ date: x.d, close: Number(x.c) || 0, change: null }));
+      return { data: { series, source: 'local', path: amvFile }, source: 'local' };
     });
     res.json(r.data);
   } catch (e) { res.status(500).json({ error: e.message }); }

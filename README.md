@@ -1,14 +1,8 @@
 # 知行 Winfish
 
-A 股盘中 / 盘前 / 盘后一体化工作台。前后端一体，SQLite 持久化，数据由后端统一接管。
+A 股盘中 / 盘前 / 盘后一体化工作台。
 
-## 技术栈
-
-- 后端：Node.js (Express) + SQLite（内置 node:sqlite，免编译）· 端口 7788
-- 前端：React 18 + TypeScript + Vite + Tailwind（亮 / 暗主题，默认亮色暖纸感）
-- 持久化：SQLite 单文件，重启不丢；定时任务自动刷新核心数据到缓存
-
-## 页面（左侧边栏）
+## 页面模块
 
 | 路由 | 页面 | 内容 |
 |---|---|---|
@@ -22,56 +16,3 @@ A 股盘中 / 盘前 / 盘后一体化工作台。前后端一体，SQLite 持�
 | `/discover` | 发现 | 外盘映射 + 活跃市值 0AMV + 量能图 |
 | `/review` | 盘后复盘 | 情绪复盘（数据→周期→逻辑）+ 复盘归档 + 心法·检查清单 |
 | `/settings` | 设置 | 主题风格 / 系统状态 / 关于 |
-
-## 目录结构
-
-```
-server/                后端
-  index.js             Express 入口（托管 frontend/dist）
-  config.js            配置（.env，不入库）
-  db.js                SQLite（观察池/操作/归档/盘前预案/快照缓存）
-  scheduler.js         定时任务（盘中每小时整点刷新）
-  datasources/         多通道数据接入 + 自动降级
-  services/            情绪 / 外盘 / 板块 / 宽度 / 年度等业务服务
-  routes/              REST API
-frontend/              React 前端（Vite + TS + Tailwind）
-web/                   Vue 旧版（已废弃，保留作回退）
-data/                  数据库与缓存（不入库）
-```
-
-## 本地启动
-
-```bash
-npm install
-cd frontend && npm install && npm run build && cd ..
-npm start          # http://localhost:7788
-```
-
-## 数据刷新机制
-
-- 盘中（9:15-11:35 / 12:55-15:05）：核心数据**每小时整点**刷新到缓存
-- 外盘：每日 8:00 / 9:10 更新
-- 盘后：15:10 自动拉收盘数据 + 当日快照归档
-- 前端请求时若缓存过期会即时补拉一次
-
-## API
-
-```
-GET  /api/market/summary        大盘指数+成交额
-GET  /api/market/quotes?codes=   实时行情
-GET  /api/market/kline?code=     K线（period 4=日线）
-GET  /api/market/volume?days=    两市成交额历史
-GET  /api/market/amv             活跃市值（本地0AMV）
-GET  /api/emotion                情绪面板（涨停/跌停/梯队/主类）
-GET  /api/global/indices         外盘指数
-GET  /api/sector/flow            板块资金流（行业/概念）
-POST /api/import/trades          交割单批量导入
-GET/POST /api/premarket          盘前预案（按日期）+ /copy
-GET/POST/DELETE /api/watchlist   观察池
-GET/POST /api/trades             操作记录
-GET/POST /api/review             复盘归档
-```
-
-## 说明
-
-仅供研究参考，不构成投资建议。数据来源为公开渠道，准确性以官方为准。

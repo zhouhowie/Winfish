@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WinFish · 复盘点金</title>
+  <meta name="description" content="每日A股复盘与交易思考，自上而下四步分析法：市场环境→市场风格→板块题材→个股买卖点。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 fill=%22%23537D96%22 rx=%224%22/><text x=%2232%22 y=%2242%22 text-anchor=%22middle%22 fill=%22%23FCFAF5%22 font-size=%2236%22 font-family=%22serif%22 font-weight=%22500%22>W</text></svg>">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <span class="brand-icon">W</span>
+        <span>WinFish</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="菜单" aria-expanded="false">☰</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="active">今日复盘</a></li>
+        <li><a href="archive.html">历史归档</a></li>
+        <li><a href="about.html">交易哲学</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>复盘点金</h1>
+    <p>自上而下四步法 · 情绪周期 / 技术分析 / 题材轮动</p>
+    <div style="margin-top:16px;font-size:0.85em;color:var(--text-dim);" id="hero-date">
+      数据加载中…
+    </div>
+  </section>
+
+  <main class="container">
+
+    <!-- Quick Stats（数据来自 data/latest.js → components/stats.js） -->
+    <div class="quick-stats" id="quick-stats"></div>
+
+    <!-- Emotion Cycle Bar -->
+    <div class="card" id="emotion-card" style="margin-bottom:20px;"></div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Left: Latest review entry -->
+      <div class="card" id="review-card"></div>
+
+      <!-- Right sidebar: 5-dim diagnostic + recent entries -->
+      <div>
+        <!-- 5-dim diagnostic -->
+        <div class="card" id="diagnosis-card" style="margin-bottom:16px;"></div>
+
+        <!-- Recent reviews -->
+        <div class="card" id="recent-card"></div>
+      </div>
+    </div>
+
+    <!-- Full market data section -->
+    <h2 class="section-title">盘面全景</h2>
+
+    <!-- Capital flow table -->
+    <div class="card dashboard-full" id="flows-card"></div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="index.html">今日复盘</a>
+        <a href="archive.html">历史归档</a>
+        <a href="about.html">交易哲学</a>
+      </div>
+      <p>数据来源于公开市场信息 · 不构成投资建议</p>
+      <p style="margin-top:4px;">© <span id="year">2026</span> WinFish · 主编：Howie</p>
+    </div>
+  </footer>
+
+  <!-- Back to top -->
+  <button class="back-top" id="backTop" aria-label="回到顶部">↑</button>
+
+  <!-- 数据层 -->
+  <script src="data/latest.js"></script>
+  <!-- 核心层 -->
+  <script src="js/core/utils.js"></script>
+  <script src="js/core/app.js"></script>
+  <!-- 组件层 -->
+  <script src="js/components/stats.js"></script>
+  <script src="js/components/emotion.js"></script>
+  <script src="js/components/review.js"></script>
+  <script src="js/components/diagnosis.js"></script>
+  <script src="js/components/recent.js"></script>
+  <script src="js/components/flows.js"></script>
+  <!-- 页面层（最后加载） -->
+  <script src="js/pages/index.js"></script>
+</body>
+</html>

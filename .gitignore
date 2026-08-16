@@ -1,0 +1,41 @@
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+desktop.ini
+
+# ===== 编辑器 / IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.tern-project
+
+# ===== 本地临时文件 =====
+*.log
+*.tmp
+*.bak
+temp/
+tmp/
+.cache/
+
+# ===== 打包产物 =====
+*.zip
+*.tar.gz
+*.7z
+
+# ===== 部署配置（含密钥/口令时严禁提交） =====
+.env
+.env.*
+*.pem
+*.key
+deploy/
+config.local.js
+config.local.json
+
+# ===== Node 依赖（如未来引入构建） =====
+node_modules/
+
+# ===== 本地数据 =====
+data/*.local.js

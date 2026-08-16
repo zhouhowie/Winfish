@@ -16,6 +16,7 @@ data/*.db-wal
 data/*.db-journal
 data/cache/
 data/*.log
+data/config.json
 
 # ===== 密钥与配置模板（严禁提交）=====
 .env

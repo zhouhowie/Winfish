@@ -1,7 +1,9 @@
-// 设置 — 颜色风格（深色/浅色/报纸） + 系统状态 + 关于
+// 设置 — 颜色风格（深色/浅色/报纸） + 数据接入配置 + 系统状态 + 关于
 import { useMarketSummary } from '@/lib/useQueries';
 import { Card, Badge } from '@/components/ui';
 import { getTheme, setTheme, type Theme } from '@/lib/theme';
+import { api } from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 const SOURCES: { name: string; desc: string; tone: 'default' | 'accent' }[] = [
@@ -22,6 +24,15 @@ const THEMES: { key: Theme; label: string; desc: string; bg: string; fg: string 
 export default function Settings() {
   const [theme, setT] = useState<Theme>(getTheme());
   const market = useMarketSummary();
+  const qc = useQueryClient();
+
+  const cfgQ = useQuery({ queryKey: ['runtime-config'], queryFn: api.getConfig });
+  const [form, setForm] = useState<Record<string, string>>({ tushareToken: '', wudaoUrl: '', wudaoToken: '', tdxhubUrl: '' });
+  const saveCfg = useMutation({
+    mutationFn: (patch: Record<string, string>) => api.saveConfig(patch),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['runtime-config'] }); setForm({ tushareToken: '', wudaoUrl: '', wudaoToken: '', tdxhubUrl: '' }); },
+  });
+  const cfg = cfgQ.data?.data;
 
   return (
     <div className="space-y-4">
@@ -49,6 +60,68 @@ export default function Settings() {
               </div>
             </button>
           ))}
+        </div>
+      </Card>
+
+      <Card title="数据接入配置" hint="换机部署时在此填写密钥（写入 data/config.json，不入库）">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="w-28 shrink-0 text-xs text-secondary">Tushare Token</span>
+            <input
+              type="password"
+              className="flex-1 rounded border border-border bg-surface px-2 py-1 text-xs"
+              placeholder={cfg?.tushare_token_set ? '已配置（留空不变）' : '未配置，必填'}
+              value={form.tushareToken}
+              onChange={e => setForm(f => ({ ...f, tushareToken: e.target.value }))}
+            />
+            <Badge tone={cfg?.tushare_token_set ? 'accent' : 'default'}>{cfg?.tushare_token_set ? '已设置' : '未设置'}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-28 shrink-0 text-xs text-secondary">TDX 地址</span>
+            <input
+              className="flex-1 rounded border border-border bg-surface px-2 py-1 text-xs"
+              placeholder={cfg?.tdxhub_url || 'http://tdxhub.icfqs.com:7615/TQLEX'}
+              value={form.tdxhubUrl}
+              onChange={e => setForm(f => ({ ...f, tdxhubUrl: e.target.value }))}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-28 shrink-0 text-xs text-secondary">备用通道 URL</span>
+            <input
+              className="flex-1 rounded border border-border bg-surface px-2 py-1 text-xs"
+              placeholder={cfg?.wudao_url || '备用数据源地址（可选）'}
+              value={form.wudaoUrl}
+              onChange={e => setForm(f => ({ ...f, wudaoUrl: e.target.value }))}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-28 shrink-0 text-xs text-secondary">备用通道 Token</span>
+            <input
+              type="password"
+              className="flex-1 rounded border border-border bg-surface px-2 py-1 text-xs"
+              placeholder={cfg?.wudao_token_set ? '已配置（留空不变）' : '备用通道 Token（可选）'}
+              value={form.wudaoToken}
+              onChange={e => setForm(f => ({ ...f, wudaoToken: e.target.value }))}
+            />
+            <Badge tone={cfg?.wudao_token_set ? 'accent' : 'default'}>{cfg?.wudao_token_set ? '已设置' : '未设置'}</Badge>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              className="rounded bg-accent px-4 py-1.5 text-xs text-white cursor-pointer disabled:opacity-50"
+              disabled={saveCfg.isPending || !(form.tushareToken || form.tdxhubUrl || form.wudaoUrl || form.wudaoToken)}
+              onClick={() => saveCfg.mutate({
+                ...(form.tushareToken ? { tushareToken: form.tushareToken } : {}),
+                ...(form.tdxhubUrl ? { tdxhubUrl: form.tdxhubUrl } : {}),
+                ...(form.wudaoUrl ? { wudaoUrl: form.wudaoUrl } : {}),
+                ...(form.wudaoToken ? { wudaoToken: form.wudaoToken } : {}),
+              })}
+            >
+              {saveCfg.isPending ? '保存中…' : '保存配置'}
+            </button>
+            {saveCfg.isSuccess && <span className="self-center text-xs text-bull">已保存（重启服务后生效）</span>}
+            {saveCfg.isError && <span className="self-center text-xs text-bear">保存失败</span>}
+          </div>
+          <div className="text-[10px] text-muted">配置写入 data/config.json（已被 .gitignore 排除，不会同步到 GitHub）；优先级：.env 环境变量 &gt; 此页面配置。保存后需重启服务生效。</div>
         </div>
       </Card>
 

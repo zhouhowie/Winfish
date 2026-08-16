@@ -22,8 +22,8 @@ function toBarsMin(r?: KlineRes): KBar[] {
   });
 }
 
-export default function StockModal({ code, name, onClose }: { code: string; name?: string; onClose: () => void }) {
-  const [period, setPeriod] = useState<'day' | 'min'>('day');
+export default function StockModal({ code, name, onClose, defaultPeriod = 'min' }: { code: string; name?: string; onClose: () => void; defaultPeriod?: 'day' | 'min' }) {
+  const [period, setPeriod] = useState<'day' | 'min'>(defaultPeriod);
   const setcode = code.startsWith('6') ? '1' : '0';
 
   const kq = useQuery({

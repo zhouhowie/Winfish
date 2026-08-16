@@ -19,6 +19,7 @@ import { marketBreadth } from '../services/breadth.js';
 import { kgSectors, kgDates } from '../datasources/kg.js';
 import { yearData } from '../services/year.js';
 import { withCache } from '../cache.js';
+import { getSettings, updateSettings } from '../settings.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -411,6 +412,14 @@ router.post('/review', (req, res) => {
 
 // ── 状态 ──
 router.get('/status', (req, res) => res.json({ ...schedulerStatus(), now: new Date().toISOString() }));
+
+// ── 运行时配置（token 自助填写，换机部署用）──
+router.get('/config', (req, res) => res.json({ data: getSettings() }));
+router.post('/config', (req, res) => {
+  const patch = req.body || {};
+  if (typeof patch !== 'object') return res.status(400).json({ error: '参数格式错误' });
+  res.json({ data: updateSettings(patch), ok: true });
+});
 
 // ═ 核心股池 ═
 const CORE_SEED = [

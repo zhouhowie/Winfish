@@ -5,12 +5,14 @@
  * trade_cal / monthly / weekly / 宏观利率等
  */
 import { config } from '../config.js';
+import { resolve } from '../settings.js';
 
 const API_URL = config.tushare.apiUrl;
-const TOKEN = config.tushare.token;
 
 /** 通用调用：把 tushare 返回的 fields+items 转成对象数组 */
 export async function call(apiName, params = {}) {
+  const TOKEN = resolve('tushareToken');
+  if (!TOKEN) throw new Error('tushare token 未配置（设置页填写或 .env 配置）');
   const body = JSON.stringify({ api_name: apiName, token: TOKEN, params, fields: '' });
   const res = await fetch(API_URL, {
     method: 'POST',

@@ -76,6 +76,8 @@ export const api = {
   watchItemRemove: (id: number) => j<{ data: WatchItemRow[] }>(`/watch-items/${id}`, 'DELETE'),
   compare: (codes: string[], days = 30) => j<{ data: CompareRes; cached?: boolean }>(`/compare?codes=${codes.join(',')}&days=${days}`, 'GET'),
   patrol: () => j<{ items: PatrolItem[]; cached?: boolean }>('/patrol', 'GET'),
+  getConfig: () => j<{ data: RuntimeConfig }>('/config', 'GET'),
+  saveConfig: (patch: Record<string, string>) => j<{ data: RuntimeConfig; ok: boolean }>('/config', 'POST', patch),
 };
 
 // ── 重构新增类型 ──
@@ -85,6 +87,13 @@ export interface TradePlan { id: number; trade_date: string; side: 'buy' | 'sell
 export interface WatchItemRow { id: number; trade_date: string; code: string; name: string; sector: string; note: string }
 export interface CompareRes { series: { code: string; name: string; dates: string[]; pct: number[]; close: number[] }[]; days: number }
 export interface PatrolItem { title: string; time: string; source: string; url: string }
+export interface RuntimeConfig {
+  tushare_token_set: boolean;
+  wudao_url: string;
+  wudao_token_set: boolean;
+  tdxhub_url: string;
+  port: string;
+}
 
 // ── 类型 ──
 export interface IndexInfo {

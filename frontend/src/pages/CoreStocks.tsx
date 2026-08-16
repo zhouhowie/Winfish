@@ -1,14 +1,10 @@
 // 核心个股 — ①三类核心池（反弹/机构/情绪）②按日期自选观察（每日≤10只）③个股对标
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as echarts from 'echarts/core';
-import { LineChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
 import { api, type CoreStock } from '@/lib/api';
-import { Card, Empty } from '@/components/ui';
-
-echarts.use([LineChart, GridComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
+import { Card } from '@/components/ui';
+import StockModal from '@/components/StockModal';
+import { KChart } from '@/components/KChart';
 
 // 三类核心池定义
 const POOLS: { type: string; label: string; tone: string }[] = [
@@ -22,6 +18,8 @@ export default function CoreStocks() {
   const [today, setToday] = useState(() => new Date().toISOString().slice(0, 10).replace(/-/g, ''));
   const [compareSel, setCompareSel] = useState<string[]>([]);
   const [days, setDays] = useState(30);
+  const [modal, setModal] = useState<{ code: string; name: string } | null>(null);
+  const [comparePeriod, setComparePeriod] = useState<'day' | 'min'>('day');
 
   const coreQ = useQuery({ queryKey: ['core'], queryFn: api.core });
   const watchQ = useQuery({ queryKey: ['watch-items', today], queryFn: () => api.watchItems(today) });
@@ -51,12 +49,6 @@ export default function CoreStocks() {
     }
     return m;
   }, [quoteQ.data]);
-
-  const compareQ = useQuery({
-    queryKey: ['compare', [...compareSel].sort().join(','), days],
-    queryFn: () => api.compare([...compareSel], days),
-    enabled: compareSel.length >= 2,
-  });
 
   const delCore = useMutation({ mutationFn: (c: CoreStock) => api.coreRemove(c.type, c.code), onSuccess: () => qc.invalidateQueries({ queryKey: ['core'] }) });
   const delWatch = useMutation({ mutationFn: (id: number) => api.watchItemRemove(id), onSuccess: () => qc.invalidateQueries({ queryKey: ['watch-items', today] }) });
@@ -95,7 +87,7 @@ export default function CoreStocks() {
                           <div key={s.code} className="flex items-center justify-between rounded-lg bg-elevated px-2 py-1.5">
                             <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2">
                               <input type="checkbox" className="accent-[#1d4ed8]" checked={compareSel.includes(s.code)} onChange={() => toggleCompare(s.code)} />
-                              <button className="min-w-0 truncate text-xs font-medium hover:text-accent" onClick={() => window.open(`/desk?code=${s.code}`, '_blank')}>
+                              <button className="min-w-0 truncate text-xs font-medium hover:text-accent" onClick={() => setModal({ code: s.code, name: s.name })}>
                                 {s.name} <span className="num text-[10px] text-muted">{s.code}</span>
                               </button>
                             </label>
@@ -118,13 +110,13 @@ export default function CoreStocks() {
       </div>
 
       {/* ── ② 按日期自选观察 ── */}
-      <DailyWatch today={today} setToday={setToday} watchQ={watchQ} delWatch={delWatch} quoteMap={quoteMap} compareSel={compareSel} toggleCompare={toggleCompare} watchDatesQ={watchDatesQ} />
+      <DailyWatch today={today} setToday={setToday} watchQ={watchQ} delWatch={delWatch} quoteMap={quoteMap} compareSel={compareSel} toggleCompare={toggleCompare} watchDatesQ={watchDatesQ} onOpenStock={setModal} />
 
       {/* ── ③ 个股对标 ── */}
-      <Card title={`个股对标 · 已选 ${compareSel.length} 只（≥2只生效）`} hint="仅限核心池与自选列表内个股 · 区间涨幅归一对比">
+      <Card title={`个股对标 · 已选 ${compareSel.length} 只（≥1只生效）`} hint="勾选左侧核心池或自选观察中的股票 · 每只展示K线（分时/日K）+ MA5/10/20/47/131">
         <div className="mb-3 flex items-center gap-3">
           <div className="flex flex-wrap gap-1.5">
-            {compareSel.length === 0 && <span className="text-xs text-muted">勾选左侧核心池或自选观察中的股票进行对比</span>}
+            {compareSel.length === 0 && <span className="text-xs text-muted">勾选左侧核心池或自选观察中的股票进行对标（1只即可）</span>}
             {compareSel.map(code => {
               const name = allCodes.get(code) || code;
               return (
@@ -134,25 +126,33 @@ export default function CoreStocks() {
               );
             })}
           </div>
-          {compareSel.length >= 2 && (
-            <div className="ml-auto flex items-center gap-1 text-[11px]">
-              {[10, 30, 60].map(n => (
-                <button key={n} className={`rounded px-2 py-1 ${days === n ? 'bg-accent text-white' : 'bg-elevated'}`} onClick={() => setDays(n)}>{n}日</button>
-              ))}
+          {compareSel.length >= 1 && (
+            <div className="ml-auto flex items-center gap-2">
+              <div className="flex gap-1 text-[11px]">
+                <button className={`rounded px-2 py-1 ${comparePeriod === 'day' ? 'bg-accent text-white' : 'bg-elevated'}`} onClick={() => setComparePeriod('day')}>日K</button>
+                <button className={`rounded px-2 py-1 ${comparePeriod === 'min' ? 'bg-accent text-white' : 'bg-elevated'}`} onClick={() => setComparePeriod('min')}>分时</button>
+              </div>
+              <div className="flex gap-1 text-[11px]">
+                {[10, 30, 60].map(n => (
+                  <button key={n} className={`rounded px-2 py-1 ${days === n ? 'bg-accent text-white' : 'bg-elevated'}`} onClick={() => setDays(n)}>{n}日</button>
+                ))}
+              </div>
             </div>
           )}
         </div>
-        {compareSel.length >= 2 && compareQ.isLoading && <div className="py-6 text-center text-xs text-muted">加载对比数据…</div>}
-        {compareSel.length >= 2 && ((compareQ.data?.data?.series?.length) ?? 0) >= 2 && compareQ.data && (
-          <CompareChart data={compareQ.data.data.series} />
+        {compareSel.length >= 1 && (
+          <CompareKlineGrid codes={compareSel} names={allCodes} period={comparePeriod} days={days} />
         )}
       </Card>
+
+      {/* 个股弹窗：点击名字打开（默认分时=最近交易日） */}
+      {modal && <StockModal code={modal.code} name={modal.name} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
 // ── 按日期自选观察 ──
-function DailyWatch({ today, setToday, watchQ, delWatch, quoteMap, compareSel, toggleCompare, watchDatesQ }: any) {
+function DailyWatch({ today, setToday, watchQ, delWatch, quoteMap, compareSel, toggleCompare, watchDatesQ, onOpenStock }: any) {
   const qc = useQueryClient();
   const [kw, setKw] = useState('');
   const [sector, setSector] = useState('');
@@ -216,10 +216,10 @@ function DailyWatch({ today, setToday, watchQ, delWatch, quoteMap, compareSel, t
           return (
             <div key={w.id} className="flex items-center gap-2 rounded-lg bg-elevated px-2 py-1.5">
               <input type="checkbox" className="accent-[#1d4ed8]" checked={compareSel.includes(w.code)} onChange={() => toggleCompare(w.code)} />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-xs font-medium">{w.name} <span className="num text-[10px] text-muted">{w.code}</span></div>
+              <button className="min-w-0 flex-1 text-left cursor-pointer" onClick={() => onOpenStock && onOpenStock({ code: w.code, name: w.name })}>
+                <div className="truncate text-xs font-medium hover:text-accent">{w.name} <span className="num text-[10px] text-muted">{w.code}</span></div>
                 <div className="text-[10px] text-muted">{w.sector}{w.note ? ` · ${w.note}` : ''}</div>
-              </div>
+              </button>
               {q && (
                 <span className={`num text-[11px] font-semibold ${q.pct >= 0 ? 'text-bull' : 'text-bear'}`}>
                   {q.pct >= 0 ? '+' : ''}{q.pct.toFixed(2)}%
@@ -235,33 +235,44 @@ function DailyWatch({ today, setToday, watchQ, delWatch, quoteMap, compareSel, t
   );
 }
 
-// ── 个股对标折线图 ──
-function CompareChart({ data }: { data: { code: string; name: string; dates: string[]; pct: number[]; close: number[] }[] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!ref.current || !data?.length) return;
-    const chart = echarts.init(ref.current);
-    const palette = ['#1d4ed8', '#c8341f', '#0f766e', '#b45309', '#7c3aed', '#db2777', '#4d7c0f', '#0369a1'];
-    chart.setOption({
-      grid: { left: 44, right: 16, top: 28, bottom: 34 },
-      tooltip: { trigger: 'axis', formatter: (ps: any) => {
-        const d = ps[0]?.axisValue;
-        let s = `<b>${d}</b>`;
-        for (const p of ps) s += `<br/><span style="color:${p.color}">${p.seriesName}</span>: ${p.value > 0 ? '+' : ''}${p.value}%`;
-        return s;
-      } },
-      legend: { top: 0, textStyle: { color: '#8e8e96', fontSize: 10 }, type: 'scroll' },
-      xAxis: { type: 'category', data: data[0].dates.map((d: string) => d.slice(4)), axisLabel: { color: '#8e8e96', fontSize: 9 } },
-      yAxis: { type: 'value', name: '区间涨幅%', nameTextStyle: { color: '#8e8e96', fontSize: 9 }, axisLabel: { color: '#8e8e96', fontSize: 9 }, splitLine: { lineStyle: { color: '#e8eaed' } } },
-      series: data.map((s, i) => ({
-        name: s.name, type: 'line', smooth: true, symbolSize: 3,
-        data: s.pct, lineStyle: { width: 1.5, color: palette[i % palette.length] },
-        itemStyle: { color: palette[i % palette.length] },
-      })),
+// ── 个股对标：每只展示 K 线（分时/日K 切换）+ MA5/10/20/47/131 ──
+function CompareKlineGrid({ codes, names, period, days }: { codes: string[]; names: Map<string, string>; period: 'day' | 'min'; days: number }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {codes.map(code => (
+        <CompareStockCard key={code} code={code} name={names.get(code) || code} period={period} days={days} />
+      ))}
+    </div>
+  );
+}
+
+function CompareStockCard({ code, name, period, days }: { code: string; name: string; period: 'day' | 'min'; days: number }) {
+  const setcode = code.startsWith('6') ? '1' : code.startsWith('8') || code.startsWith('4') ? '2' : '0';
+  const kq = useQuery({
+    queryKey: ['compare-kline', code, period, days],
+    queryFn: () => api.kline(code, setcode, period === 'day' ? '4' : '0', String(period === 'day' ? Math.max(days + 40, 90) : 50)),
+  });
+  const bars = useMemo(() => {
+    const items = kq.data?.data?.items || [];
+    if (period === 'day') {
+      return items.map((it: any) => ({ date: it.Data, o: Number(it.Open), h: Number(it.High), l: Number(it.Low), c: Number(it.Close) }));
+    }
+    return items.map((it: any) => {
+      const sec = Number(it.Second || 0);
+      const hh = String(Math.floor(sec / 3600)).padStart(2, '0');
+      const mm = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+      return { date: it.Data, time: `${hh}:${mm}`, o: Number(it.Open), h: Number(it.High), l: Number(it.Low), c: Number(it.Close) };
     });
-    const onResize = () => chart.resize();
-    window.addEventListener('resize', onResize);
-    return () => { window.removeEventListener('resize', onResize); chart.dispose(); };
-  }, [data]);
-  return <div ref={ref} style={{ height: 300, width: '100%' }} />;
+  }, [kq.data, period]);
+
+  return (
+    <div className="rounded-xl border border-border bg-elevated/40 p-3">
+      <div className="mb-1 flex items-center gap-2">
+        <span className="text-xs font-semibold">{name}</span>
+        <span className="num text-[10px] text-muted">{code}</span>
+        <span className="ml-auto text-[10px] text-muted">{period === 'day' ? `日K · 近${days}日` : '分时 · 最近交易日'}</span>
+      </div>
+      <KChart bars={bars} height={260} showMA={period === 'day'} maPeriods={[5, 10, 20, 47, 131]} />
+    </div>
+  );
 }

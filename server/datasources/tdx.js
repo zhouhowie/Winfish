@@ -4,10 +4,11 @@
  * 覆盖：实时行情 / 指数 / K线 / F10 / 板块 / 选股
  */
 import { config } from '../config.js';
-
-const ENDPOINT = config.tdxhub.url;
+import { resolve } from '../settings.js';
 
 async function post(entry, body, timeoutMs = 20000) {
+  const ENDPOINT = resolve('tdxhubUrl');
+  if (!ENDPOINT) throw new Error('tdxhub 地址未配置（设置页填写或 .env 配置）');
   const url = `${ENDPOINT}?Entry=${encodeURIComponent(entry)}`;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);

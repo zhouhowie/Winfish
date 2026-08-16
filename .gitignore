@@ -17,10 +17,9 @@ data/*.db-journal
 data/cache/
 data/*.log
 
-# ===== 密钥（严禁提交）=====
+# ===== 密钥与配置模板（严禁提交）=====
 .env
 .env.*
-!.env.example
 *.pem
 *.key
 

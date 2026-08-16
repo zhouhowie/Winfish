@@ -1,0 +1,21 @@
+{
+  "name": "trading-desk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "鱼的中盘操作 + 盘后复盘交互看板（TDX + Tushare 主数据源）",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "web:dev": "cd web && npm run dev",
+    "web:build": "cd web && npm run build",
+    "sync:push": "node server/tools/push-local-data.js",
+    "deploy:cloud": "node deploy/cloud-sync.mjs"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3"
+  }
+}

@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 设计语言 CSS 变量 — 亮色默认（暖纸风）/ 暗色 html.dark */
+:root {
+  --base: 45 33% 97%;         /* #FAFAF7 暖纸底 */
+  --surface: 0 0% 100%;       /* #FFFFFF 卡片 */
+  --elevated: 48 17% 94%;     /* #F3F3EE 浅灰卡 */
+  --border: 216 12% 92%;      /* #E8EAED 分隔线 */
+  --fg-primary: 220 14% 9%;   /* #14171B 正文 */
+  --fg-secondary: 219 9% 39%; /* #5A616C 次级 */
+  --fg-muted: 220 10% 64%;    /* #9AA1AB 弱化 */
+  --accent: 224 77% 48%;      /* #1D4ED8 强调蓝 */
+  --bull: 347 84% 47%;        /* #DC143C A股红涨 */
+  --bear: 120 61% 34%;        /* #228B22 A股绿跌 */
+  --warning: 32 95% 50%;      /* #F79009 */
+  --danger: 9 72% 45%;        /* #C8341F 信号红 */
+}
+html.dark {
+  --base: 240 5% 5%;
+  --surface: 240 7% 10%;
+  --elevated: 240 9% 14%;
+  --border: 240 5% 22%;
+  --fg-primary: 0 0% 98%;
+  --fg-secondary: 240 5% 78%;
+  --fg-muted: 240 5% 58%;
+  --accent: 224 70% 62%;
+  --bull: 347 84% 60%;
+  --bear: 120 61% 45%;
+  --warning: 32 95% 55%;
+  --danger: 9 72% 55%;
+}
+/* 报纸风（米黄纸感） */
+html.news {
+  --base: 44 42% 91%;          /* #F3ECD9 米黄底 */
+  --surface: 45 60% 97%;       /* #FBF6E8 纸白卡 */
+  --elevated: 42 35% 88%;      /* #EAE0C8 旧纸灰 */
+  --border: 40 25% 78%;        /* #D8CDB2 纸边 */
+  --fg-primary: 30 12% 12%;    /* #221E18 墨色 */
+  --fg-secondary: 32 8% 35%;
+  --fg-muted: 33 7% 52%;
+  --accent: 220 90% 30%;       /* 深蓝墨水 */
+  --bull: 347 84% 42%;         /* 朱红 */
+  --bear: 120 55% 28%;         /* 墨绿 */
+  --warning: 32 95% 42%;
+  --danger: 9 72% 40%;
+}
+html.news body { background: hsl(var(--base)); }
+
+/* 数字等宽 */
+.num { font-family: theme('fontFamily.mono'); font-variant-numeric: tabular-nums; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+* { border-color: hsl(var(--border)); scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: hsl(var(--border) / 0.72); border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: hsl(var(--accent) / 0.6); }
+
+body {
+  background: hsl(var(--base));
+  color: hsl(var(--fg-primary));
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 卡片 */
+.card {
+  @apply rounded-xl border border-border bg-surface;
+}
+.card-pad { @apply p-4; }
+
+/* 区块标题（竖条 + 图标 + 标题） */
+.section-title { @apply mb-2 flex items-center gap-2; }
+.section-title-bar { @apply h-3.5 w-0.5 rounded-full bg-gradient-to-b from-accent to-accent/30; }
+.section-title h2 { @apply text-xs font-semibold text-foreground; }
+
+/* 表格 */
+.th { @apply px-2 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted; }
+.td { @apply px-2 py-1.5 text-[12px]; }
+
+/* 按钮 */
+.btn { @apply inline-flex items-center gap-1.5 rounded-btn border border-border bg-surface px-3 py-1.5 text-xs text-secondary transition-colors hover:text-foreground hover:border-accent/50 cursor-pointer; }
+.btn-primary { @apply bg-accent border-accent text-white hover:bg-accent/90 hover:text-white; }
+.btn-sm { @apply px-2 py-1 text-[11px]; }
+
+/* 徽章 */
+.badge { @apply inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold; }

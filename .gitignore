@@ -1,0 +1,46 @@
+# ===== 依赖 =====
+node_modules/
+frontend/node_modules/
+web/node_modules/
+
+# ===== 构建产物 =====
+frontend/dist/
+web/dist/
+*.tsbuildinfo
+
+# ===== 数据库与缓存（本地数据不入库）=====
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.db-journal
+data/cache/
+data/*.log
+
+# ===== 密钥（严禁提交）=====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ===== 部署配置（含服务器地址/凭据时勿提交）=====
+deploy/cloud-config.json
+deploy/*.zip
+
+# ===== 系统 / 编辑器 =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.log
+temp/
+tmp/
+
+# ===== 打包产物 =====
+*.zip
+*.tar.gz
+*.7z

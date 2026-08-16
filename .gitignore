@@ -26,6 +26,7 @@ data/*.log
 # ===== 部署配置（含服务器地址/凭据时勿提交）=====
 deploy/cloud-config.json
 deploy/*.zip
+DEPLOY.md
 
 # ===== 系统 / 编辑器 =====
 .DS_Store
